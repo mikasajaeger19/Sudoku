@@ -1,0 +1,1 @@
+console.log("u are a cuck and cheater")

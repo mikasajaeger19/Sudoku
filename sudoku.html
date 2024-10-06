@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku Solver</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        table {
+            border-collapse: collapse;
+            margin: 20px auto;
+        }
+        td {
+            width: 50px;
+            height: 50px;
+            border: 1px solid #000;
+            text-align: center;
+        }
+        input {
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            font-size: 1.5em;
+        }
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+        .invalid {
+            background-color: #fdd;
+        }
+    </style>
+</head>
+<body>
+
+    <h1 style="text-align: center;">Sudoku Solver</h1>
+
+    <table id="sudoku-board">
+        <!-- Sudoku grid goes here -->
+    </table>
+
+    <div class="button-container">
+        <button onclick="solveSudoku()">Solve</button>
+        <button onclick="resetBoard()">Reset</button>
+    </div>
+
+    <script>
+        // Create 9x9 Sudoku grid
+        const boardTable = document.getElementById("sudoku-board");
+
+        for (let i = 0; i < 9; i++) {
+            let row = document.createElement('tr');
+            for (let j = 0; j < 9; j++) {
+                let cell = document.createElement('td');
+                let input = document.createElement('input');
+                input.setAttribute('maxlength', '1');
+                input.setAttribute('type', 'text');
+                input.setAttribute('oninput', 'validateInput(this)');
+                cell.appendChild(input);
+                row.appendChild(cell);
+            }
+            boardTable.appendChild(row);
+        }
+
+        // Validate input to allow only numbers 1-9
+        function validateInput(input) {
+            const value = input.value;
+            if (value < '1' || value > '9') {
+                input.value = '';  // clear invalid input
+            }
+        }
+
+        // Convert HTML table input values to a 2D array (Sudoku board)
+        function getBoardFromInput() {
+            const board = [];
+            const rows = document.querySelectorAll("#sudoku-board tr");
+            rows.forEach((row, rowIndex) => {
+                const cells = row.querySelectorAll('input');
+                const boardRow = [];
+                cells.forEach((cell, colIndex) => {
+                    const value = cell.value;
+                    boardRow.push(value === '' ? '.' : value);
+                });
+                board.push(boardRow);
+            });
+            return board;
+        }
+
+        // Set board values in the HTML table
+        function setBoardToInput(board) {
+            const rows = document.querySelectorAll("#sudoku-board tr");
+            rows.forEach((row, rowIndex) => {
+                const cells = row.querySelectorAll('input');
+                cells.forEach((cell, colIndex) => {
+                    cell.value = board[rowIndex][colIndex] === '.' ? '' : board[rowIndex][colIndex];
+                });
+            });
+        }
+
+        // Solve the Sudoku board
+        function solveSudoku() {
+            const board = getBoardFromInput();
+            if (solvedSudoku(board) !== "No Valid Solution") {
+                setBoardToInput(board);
+            } else {
+                alert("No valid solution found!");
+            }
+        }
+
+        // Reset the board to empty
+        function resetBoard() {
+            const inputs = document.querySelectorAll('#sudoku-board input');
+            inputs.forEach(input => input.value = '');
+        }
+
+        // Solve Sudoku logic (from your previous code)
+        const solvedSudoku = (board) => {
+            if (solve(board, 0, 0))
+                return board;
+            else
+                return "No Valid Solution";
+        }
+
+        const nextCell = (i, j) => {
+            if (j == 8) return [i + 1, 0];
+            return [i, j + 1];
+        }
+
+        const isValid = (board, i, j, c) => {
+            for (let index = 0; index < 9; index++) {
+                if (board[i][index] == c || board[index][j] == c)
+                    return false;
+            }
+            let firstI = Math.floor(i / 3) * 3;
+            let firstJ = Math.floor(j / 3) * 3;
+            for (let ii = firstI; ii < firstI + 3; ii++) {
+                for (let jj = firstJ; jj < firstJ + 3; jj++) {
+                    if (board[ii][jj] == c)
+                        return false;
+                }
+            }
+            return true;
+        }
+
+        const solve = (board, i, j) => {
+            if (i == 9) return true;
+            const nextIndex = nextCell(i, j);
+            if (board[i][j] != '.') return solve(board, nextIndex[0], nextIndex[1]);
+            for (let index = 1; index <= 9; index++) {
+                let nextChar = String(index);
+                if (isValid(board, i, j, nextChar)) {
+                    board[i][j] = nextChar;
+                    if (solve(board, nextIndex[0], nextIndex[1])) return true;
+                    board[i][j] = '.';
+                }
+            }
+            return false;
+        }
+    </script>
+
+</body>
+</html>
